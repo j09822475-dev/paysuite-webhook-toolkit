@@ -1,0 +1,49 @@
+# Source — only compiled output in dist/ ships.
+src/
+tests/
+__tests__/
+**/*.test.ts
+**/*.test-d.ts
+**/*.spec.ts
+**/__tests__/
+
+# Examples and benchmarks are repo-only.
+examples/
+sandbox/
+benchmarks/
+
+# Coverage and test reports.
+coverage/
+.nyc_output/
+
+# Build / tool config.
+tsconfig.json
+tsconfig.*.json
+tsup.config.ts
+vitest.config.ts
+.size-limit.json
+.eslintrc*
+.prettierrc*
+.editorconfig
+
+# Internal docs (PLAN.md is allow-listed via package.json#files).
+REVIEW.md
+CONTRIBUTING.md
+
+# CI / VCS / IDE.
+.github/
+.git/
+.gitignore
+.gitattributes
+.vscode/
+.idea/
+
+# Environment / secrets.
+.env
+.env.*
+
+# Local artifacts.
+*.log
+.DS_Store
+.turbo/
+node_modules/
