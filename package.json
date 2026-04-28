@@ -137,10 +137,6 @@
       "types": "./dist/providers/square.d.ts",
       "import": "./dist/providers/square.js"
     },
-    "./providers/paypal": {
-      "types": "./dist/providers/paypal.d.ts",
-      "import": "./dist/providers/paypal.js"
-    },
     "./providers/mailgun": {
       "types": "./dist/providers/mailgun.d.ts",
       "import": "./dist/providers/mailgun.js"
@@ -148,10 +144,6 @@
     "./providers/postmark": {
       "types": "./dist/providers/postmark.d.ts",
       "import": "./dist/providers/postmark.js"
-    },
-    "./providers/plaid": {
-      "types": "./dist/providers/plaid.d.ts",
-      "import": "./dist/providers/plaid.js"
     },
     "./providers/svix": {
       "types": "./dist/providers/svix.d.ts",
