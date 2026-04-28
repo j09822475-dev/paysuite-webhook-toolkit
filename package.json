@@ -77,6 +77,14 @@
       "types": "./dist/logger/index.d.ts",
       "import": "./dist/logger/index.js"
     },
+    "./logger/pino": {
+      "types": "./dist/logger/pino.d.ts",
+      "import": "./dist/logger/pino.js"
+    },
+    "./retry": {
+      "types": "./dist/retry/index.d.ts",
+      "import": "./dist/retry/index.js"
+    },
     "./providers": {
       "types": "./dist/providers/index.d.ts",
       "import": "./dist/providers/index.js"
