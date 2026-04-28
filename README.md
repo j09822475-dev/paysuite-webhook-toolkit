@@ -57,6 +57,27 @@ export default async (request: Request): Promise<Response> => {
 
 ---
 
+## Examples
+
+Runnable examples live in [`examples/`](./examples). Each runs end-to-end with `npx tsx examples/<name>.ts` — no server, no real provider account, no env vars: the bundled `signWith` helper produces a valid signed request inline. Every example also has a self-contained StackBlitz project under [`examples/sandbox/`](./examples/sandbox).
+
+| Example | What it shows | Sandbox |
+|---|---|---|
+| [`basic-usage.ts`](./examples/basic-usage.ts) | One verifier, one Stripe event, typed narrowing, tampered-body rejection. | [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/j09822475-dev/paysuite-webhook-toolkit/tree/main/examples/sandbox/basic-usage) |
+| [`advanced-usage.ts`](./examples/advanced-usage.ts) | Multi-provider endpoint (Stripe + GitHub + Clerk), idempotency, typed router, secret rotation, retry metadata. | [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/j09822475-dev/paysuite-webhook-toolkit/tree/main/examples/sandbox/advanced-usage) |
+| [`with-hono.ts`](./examples/with-hono.ts) | Hono adapter exercised in-process — same code runs on Cloudflare Workers, Bun, Deno, Node. | [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/j09822475-dev/paysuite-webhook-toolkit/tree/main/examples/sandbox/with-hono) |
+| [`with-next.ts`](./examples/with-next.ts) | Next.js App Router handler called directly with a `Request` (Edge-runtime compatible). | [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/j09822475-dev/paysuite-webhook-toolkit/tree/main/examples/sandbox/with-next) |
+
+```bash
+# Run any example locally:
+npx tsx examples/basic-usage.ts
+npx tsx examples/advanced-usage.ts
+npx tsx examples/with-hono.ts
+npx tsx examples/with-next.ts
+```
+
+---
+
 ## API Reference
 
 ### `createVerifier(options)`
