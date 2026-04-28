@@ -204,7 +204,6 @@ export async function signWith(
       );
     default: {
       // Generic provider: assume HMAC-SHA256 over rawBody if `buildSigningString` is missing.
-      void fromRecord; // placeholder reference
       const stringToSign = provider.buildSigningString
         ? provider.buildSigningString({ rawBody, timestamp: timestampSeconds * 1000, url, method: 'POST', headers: fromRecord({}) })
         : rawBody;

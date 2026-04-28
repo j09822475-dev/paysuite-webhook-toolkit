@@ -2,6 +2,18 @@ import { base64, utf8 } from '../core/encoding.js';
 import { normalizeEd25519PublicKey, verifyEd25519 } from '../core/crypto.js';
 import type { WebhookProvider } from '../core/types.js';
 
+// Cache the normalized 32-byte raw key per provided secret bytes — see
+// the same pattern in `providers/discord.ts` for rationale.
+const normalizedKeyCache = new WeakMap<Uint8Array, Uint8Array>();
+
+function getPublicKey(secret: Uint8Array): Uint8Array {
+  const cached = normalizedKeyCache.get(secret);
+  if (cached) return cached;
+  const normalized = normalizeEd25519PublicKey(secret);
+  normalizedKeyCache.set(secret, normalized);
+  return normalized;
+}
+
 /** SendGrid event-webhook payload. Top-level array of event objects. */
 export type SendGridEvent = ReadonlyArray<Record<string, unknown>>;
 
@@ -35,7 +47,7 @@ export const sendgrid: WebhookProvider<SendGridEvent> = {
   },
 
   verify: async ({ signature, secret, rawBody, timestamp }) => {
-    const publicKey = normalizeEd25519PublicKey(secret);
+    const publicKey = getPublicKey(secret);
     const seconds = Math.floor((timestamp ?? 0) / 1000);
     const tsBytes = utf8.encode(String(seconds));
     const data = new Uint8Array(tsBytes.length + rawBody.length);

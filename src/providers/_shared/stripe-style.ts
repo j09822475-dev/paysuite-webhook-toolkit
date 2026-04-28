@@ -1,20 +1,33 @@
+/** Parsed Stripe-style header. `t` is `null` if absent / malformed. */
+export interface StripeStyleParts {
+  readonly t: number | null;
+  readonly v1: ReadonlyArray<string>;
+  readonly v0: ReadonlyArray<string>;
+}
+
+// `parseSignature` and `extractTimestamp` both run per request and both
+// need this parse. Memoize on the raw string so providers (Stripe,
+// Paddle) don't pay it twice. Bounded LRU semantics aren't necessary —
+// header strings are short, and the Map is keyed on identical strings,
+// not different per-request bodies — but cap size as a belt-and-braces
+// guard against pathological invocation patterns.
+const parseCache = new Map<string, StripeStyleParts>();
+const PARSE_CACHE_MAX = 256;
+
 /**
  * Parser for Stripe-style signature headers of the form
  * `t=<seconds>,v1=<hex>,v1=<hex>,v0=<hex>`.
- *
- * Returns the timestamp (seconds; consumer multiplies by 1000) and every
- * `v1` / `v0` hex signature so the core verifier can iterate × the
- * `secret` rotation list.
  */
 export const stripeStyleSignature = {
   /**
    * Parse a Stripe-style header.
    *
    * @param raw - Raw header value, e.g. `t=123,v1=abc,v1=def,v0=...`.
-   * @returns `{ t: number | null, v1: string[], v0: string[] }`.
-   *           `t` is `null` if absent / malformed; signatures are hex strings.
+   * @returns `{ t, v1, v0 }`. `t` is `null` if absent / malformed.
    */
-  parse(raw: string): { t: number | null; v1: string[]; v0: string[] } {
+  parse(raw: string): StripeStyleParts {
+    const cached = parseCache.get(raw);
+    if (cached) return cached;
     const parts = raw.split(',');
     let t: number | null = null;
     const v1: string[] = [];
@@ -33,6 +46,12 @@ export const stripeStyleSignature = {
         v0.push(value);
       }
     }
-    return { t, v1, v0 };
+    const result: StripeStyleParts = { t, v1, v0 };
+    if (parseCache.size >= PARSE_CACHE_MAX) {
+      const oldest = parseCache.keys().next().value;
+      if (oldest !== undefined) parseCache.delete(oldest);
+    }
+    parseCache.set(raw, result);
+    return result;
   },
 };

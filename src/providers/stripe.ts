@@ -75,7 +75,17 @@ export const stripe: WebhookProvider<StripeEvent> = {
     if (!raw) return null;
     const parts = stripeStyleSignature.parse(raw);
     if (parts.v1.length === 0) return null;
-    return { signatures: parts.v1.map((s) => hex.decode(s)), raw };
+    const signatures: Uint8Array[] = [];
+    for (const s of parts.v1) {
+      try {
+        signatures.push(hex.decode(s));
+      } catch {
+        // Skip malformed entries so a single bad v1 in a rotation list
+        // doesn't reject an otherwise verifiable signature.
+      }
+    }
+    if (signatures.length === 0) return null;
+    return { signatures, raw };
   },
 
   extractTimestamp: (headers) => {

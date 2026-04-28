@@ -8,7 +8,19 @@ export type PaddleEvent = {
   readonly [k: string]: unknown;
 };
 
-function parsePaddleSignature(raw: string): { ts: number | null; h1: string[] } {
+interface PaddleParts {
+  readonly ts: number | null;
+  readonly h1: ReadonlyArray<string>;
+}
+
+// Memoize on the raw header string so the same request doesn't pay the
+// split twice (parseSignature + extractTimestamp both run per verify).
+const parseCache = new Map<string, PaddleParts>();
+const PARSE_CACHE_MAX = 256;
+
+function parsePaddleSignature(raw: string): PaddleParts {
+  const cached = parseCache.get(raw);
+  if (cached) return cached;
   const parts = raw.split(';');
   let ts: number | null = null;
   const h1: string[] = [];
@@ -24,7 +36,13 @@ function parsePaddleSignature(raw: string): { ts: number | null; h1: string[] } 
       h1.push(v);
     }
   }
-  return { ts, h1 };
+  const result: PaddleParts = { ts, h1 };
+  if (parseCache.size >= PARSE_CACHE_MAX) {
+    const oldest = parseCache.keys().next().value;
+    if (oldest !== undefined) parseCache.delete(oldest);
+  }
+  parseCache.set(raw, result);
+  return result;
 }
 
 /**
@@ -48,7 +66,16 @@ export const paddle: WebhookProvider<PaddleEvent> = {
     if (!raw) return null;
     const { h1 } = parsePaddleSignature(raw);
     if (h1.length === 0) return null;
-    return { signatures: h1.map((s) => hex.decode(s)), raw };
+    const signatures: Uint8Array[] = [];
+    for (const s of h1) {
+      try {
+        signatures.push(hex.decode(s));
+      } catch {
+        // Skip malformed entries (rotation list may contain a bad value).
+      }
+    }
+    if (signatures.length === 0) return null;
+    return { signatures, raw };
   },
 
   extractTimestamp: (headers) => {

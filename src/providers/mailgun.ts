@@ -16,13 +16,34 @@ interface MailgunSig {
   readonly signature: string;
 }
 
-function parseMailgunSig(rawBody: Uint8Array): MailgunSig | null {
-  let parsed: unknown;
+interface MailgunParse {
+  readonly body: unknown;
+  readonly sig: MailgunSig | null;
+}
+
+// Cache the JSON parse on the raw body bytes — `extractTimestamp`,
+// `verify`, and `parseEvent` all need it for the same request, and the
+// `Uint8Array` instance flows through the verifier unchanged.
+const parseCache = new WeakMap<Uint8Array, MailgunParse>();
+
+function parseMailgunBody(rawBody: Uint8Array): MailgunParse {
+  const cached = parseCache.get(rawBody);
+  if (cached) return cached;
+  let body: unknown;
   try {
-    parsed = JSON.parse(utf8.decode(rawBody)) as unknown;
+    body = JSON.parse(utf8.decode(rawBody)) as unknown;
   } catch {
-    return null;
+    const result: MailgunParse = { body: null, sig: null };
+    parseCache.set(rawBody, result);
+    return result;
   }
+  const sig = extractSig(body);
+  const result: MailgunParse = { body, sig };
+  parseCache.set(rawBody, result);
+  return result;
+}
+
+function extractSig(parsed: unknown): MailgunSig | null {
   if (!parsed || typeof parsed !== 'object') return null;
   const sig = (parsed as { signature?: unknown }).signature;
   if (!sig || typeof sig !== 'object') return null;
@@ -53,19 +74,19 @@ export const mailgun: WebhookProvider<MailgunEvent> = {
   parseSignature: (_headers) => {
     // Signature lives in the body for Mailgun; `parseSignature` is
     // just used to short-circuit when nothing is present. The actual
-    // body-derived signature is read by `buildSigningString` below.
+    // body-derived signature is read by `verify` below.
     return { signatures: [new Uint8Array(0)], raw: '<in-body>' };
   },
 
   extractTimestamp: (_headers, rawBody) => {
-    const sig = parseMailgunSig(rawBody);
+    const { sig } = parseMailgunBody(rawBody);
     return sig ? sig.timestamp * 1000 : null;
   },
 
   // The signature lives in the body for Mailgun — `parseSignature` cannot
   // return it directly, so this provider uses the `verify` escape hatch.
   verify: async ({ secret, rawBody, timestamp }) => {
-    const sig = parseMailgunSig(rawBody);
+    const { sig } = parseMailgunBody(rawBody);
     if (!sig) return false;
     const seconds = Math.floor((timestamp ?? sig.timestamp * 1000) / 1000);
     const expected = await hmacSha256(secret, utf8.encode(`${String(seconds)}${sig.token}`));
@@ -78,7 +99,7 @@ export const mailgun: WebhookProvider<MailgunEvent> = {
     return timingSafeEqual(actual, expected);
   },
 
-  parseEvent: (rawBody) => JSON.parse(utf8.decode(rawBody)) as MailgunEvent,
+  parseEvent: (rawBody) => parseMailgunBody(rawBody).body as MailgunEvent,
 
   idempotencyKey: (_input, event) => event.signature?.token ?? null,
 };

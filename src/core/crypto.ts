@@ -104,6 +104,32 @@ export function normalizeEd25519PublicKey(key: string | Uint8Array): Uint8Array 
   }
 }
 
+// `importKey` is the expensive part of Ed25519 verification (the math is
+// fast). Cache the imported `CryptoKey` per raw 32-byte public key so a
+// process verifying one or two rotation keys doesn't re-import on every
+// request. Keyed by the raw bytes' identity — providers normalize once
+// and reuse the same `Uint8Array` per call (see `normalizeEd25519PublicKey`).
+const ed25519KeyCache = new WeakMap<Uint8Array, Promise<CryptoKey>>();
+
+function importEd25519Key(publicKey: Uint8Array): Promise<CryptoKey> {
+  const cached = ed25519KeyCache.get(publicKey);
+  if (cached) return cached;
+  const subtle = getSubtle();
+  const promise = subtle
+    .importKey('raw', publicKey as BufferSource, { name: 'Ed25519' }, false, ['verify'])
+    .catch((cause: unknown) => {
+      // Don't poison the cache on a runtime-support failure.
+      ed25519KeyCache.delete(publicKey);
+      throw configError(
+        'Ed25519 verification is not supported by this runtime. Upgrade to Node 20+ or use Bun/Deno/CF Workers.',
+        '',
+        { cause: String(cause) },
+      );
+    });
+  ed25519KeyCache.set(publicKey, promise);
+  return promise;
+}
+
 /**
  * Verify an Ed25519 signature over `data` with the given raw 32-byte public key.
  *
@@ -123,15 +149,6 @@ export async function verifyEd25519(
   data: Uint8Array,
 ): Promise<boolean> {
   const subtle = getSubtle();
-  let cryptoKey: CryptoKey;
-  try {
-    cryptoKey = await subtle.importKey('raw', publicKey as BufferSource, { name: 'Ed25519' }, false, ['verify']);
-  } catch (cause) {
-    throw configError(
-      'Ed25519 verification is not supported by this runtime. Upgrade to Node 20+ or use Bun/Deno/CF Workers.',
-      '',
-      { cause: String(cause) },
-    );
-  }
+  const cryptoKey = await importEd25519Key(publicKey);
   return subtle.verify('Ed25519', cryptoKey, signature as BufferSource, data as BufferSource);
 }

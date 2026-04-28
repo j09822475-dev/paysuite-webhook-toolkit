@@ -1,4 +1,4 @@
-import type { Router, RouterHandler } from './types.js';
+import type { Router } from './types.js';
 
 export type { Router, RouterHandler } from './types.js';
 
@@ -53,6 +53,3 @@ export function createRouter<TEvent extends { type: string }>(): Router<TEvent> 
   // but the runtime object stores all handlers in a single `Map`.
   return router as unknown as Router<TEvent>;
 }
-
-/** @internal — exported for `withIdempotency` and adapter wiring tests. */
-export type { RouterHandler as _Handler };

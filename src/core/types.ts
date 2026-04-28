@@ -186,7 +186,17 @@ export type WebhookProviderSpec<TEvent = unknown> = WebhookProvider<TEvent>;
 /** @deprecated Use {@link WebhookProvider}. Internal alias retained for terseness. */
 export type Provider<TEvent = unknown> = WebhookProvider<TEvent>;
 
-/** Extracts the event payload type from a `WebhookProvider`. */
+/**
+ * Extracts the event payload type from a `WebhookProvider`.
+ *
+ * NOTE on the `<any>` constraint: `WebhookProvider`'s `idempotencyKey`
+ * callback (`(event: TEvent) => string | null`) makes the type
+ * contravariant in `TEvent` under `strictFunctionTypes`, so a
+ * `WebhookProvider<unknown>` constraint would reject every concrete
+ * provider (e.g. `WebhookProvider<StripeEvent>`) at the bound check.
+ * `<any>` is the correct escape hatch here; consumers still get full
+ * narrowing via the `infer TEvent` extraction below.
+ */
 export type EventOf<P extends WebhookProvider<any>> = P extends WebhookProvider<infer TEvent> ? TEvent : never;
 
 /**
@@ -245,13 +255,6 @@ export interface VerifierOptions<P extends WebhookProvider<any>> {
    * `'invalid_signature'` to avoid leaking the failure mode.
    */
   readonly onError?: (err: WebhookError) => Response;
-  /**
-   * Provider-specific extras passed verbatim to the provider's `verify` /
-   * `buildSigningString` via the `url` field of `NormalizedRequest`.
-   * (Square's `notificationUrl`, etc., should be set on the
-   * `NormalizedRequest.url` instead by the adapter.)
-   */
-  readonly url?: string;
 }
 
 /**

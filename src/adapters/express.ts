@@ -6,8 +6,8 @@ import { defaultErrorResponse, runHandler } from './_shared/normalize.js';
 export interface ExpressWebhookOptions {
   /** Override default error → Response mapping. */
   readonly onError?: (err: WebhookError) => Response;
-  /** HTTP status code returned on success when the handler returns `void`. Default `204`. */
-  readonly successStatus?: number;
+  /** Override default success Response (when the handler returns `void`). Default 204 / empty body. */
+  readonly successResponse?: () => Response;
 }
 
 /**
@@ -69,7 +69,7 @@ export function expressWebhook<P extends WebhookProvider>(
   options: ExpressWebhookOptions = {},
 ): ExpressHandler {
   const onError = options.onError ?? defaultErrorResponse;
-  const successStatus = options.successStatus ?? 204;
+  const successResponse = options.successResponse ?? (() => new Response(null, { status: 204 }));
 
   return (req, res, next) => {
     void (async (): Promise<void> => {
@@ -97,11 +97,7 @@ export function expressWebhook<P extends WebhookProvider>(
         req,
         onError,
       );
-      if (response) {
-        await sendResponse(res, response);
-      } else {
-        res.status(successStatus).end();
-      }
+      await sendResponse(res, response ?? successResponse());
     })().catch(next);
   };
 }

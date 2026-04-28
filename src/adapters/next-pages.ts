@@ -22,8 +22,8 @@ export interface NextPagesLikeResponse {
 /** Options for `nextPagesWebhook`. */
 export interface NextPagesWebhookOptions {
   readonly onError?: (err: WebhookError) => Response;
-  /** HTTP status returned on success when the handler returns `void`. Default `204`. */
-  readonly successStatus?: number;
+  /** Override default success Response (when the handler returns `void`). Default 204 / empty body. */
+  readonly successResponse?: () => Response;
 }
 
 /**
@@ -57,7 +57,7 @@ export function nextPagesWebhook<P extends WebhookProvider>(
   options: NextPagesWebhookOptions = {},
 ): (req: NextPagesLikeRequest, res: NextPagesLikeResponse) => Promise<void> {
   const onError = options.onError ?? defaultErrorResponse;
-  const successStatus = options.successStatus ?? 204;
+  const successResponse = options.successResponse ?? (() => new Response(null, { status: 204 }));
 
   return async (req, res) => {
     let rawBody: Uint8Array;
@@ -81,11 +81,7 @@ export function nextPagesWebhook<P extends WebhookProvider>(
       onError,
     );
 
-    if (response) {
-      await sendResponse(res, response);
-    } else {
-      res.status(successStatus).end();
-    }
+    await sendResponse(res, response ?? successResponse());
   };
 }
 

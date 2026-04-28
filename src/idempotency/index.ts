@@ -73,11 +73,18 @@ export function withIdempotency<P extends WebhookProvider>(
 
     if (inner.idempotencyKey === null) return inner;
 
+    // Idempotency keys are namespaced as `${providerId}:${rawKey}` by the
+    // core verifier. Tag telemetry with the child providerId rather than
+    // the wrapper's (which is `'multi'` for `createMultiVerifier`) so
+    // dashboards keep per-vendor granularity for duplicates / store
+    // errors — exactly when granularity matters most.
+    const tagProviderId = extractChildProviderId(inner.idempotencyKey, verifier.providerId);
+
     let inserted: boolean;
     try {
       inserted = await options.store.putIfAbsent(inner.idempotencyKey, ttl);
     } catch (cause) {
-      metrics?.increment('idempotency.store_error', { providerId: verifier.providerId });
+      metrics?.increment('idempotency.store_error', { providerId: tagProviderId });
       const err = new WebhookError({
         code: 'IDEMPOTENCY_STORE',
         message: 'Idempotency store is unavailable',
@@ -90,7 +97,7 @@ export function withIdempotency<P extends WebhookProvider>(
 
     if (inserted) return inner;
 
-    metrics?.increment('idempotency.duplicate', { providerId: verifier.providerId });
+    metrics?.increment('idempotency.duplicate', { providerId: tagProviderId });
     const httpStatus = mode === 'error' ? 409 : 200;
     const message =
       mode === 'replay-cached'
@@ -110,4 +117,13 @@ export function withIdempotency<P extends WebhookProvider>(
     providerId: verifier.providerId,
     verify,
   };
+}
+
+function extractChildProviderId(idempotencyKey: string, fallback: string): string {
+  // Core verifier prefixes keys with `${providerId}:`. For a multi-
+  // verifier, that prefix IS the child id; for a plain verifier, it's
+  // the same as `verifier.providerId`. Either way, the prefix is the
+  // accurate per-vendor tag.
+  const colon = idempotencyKey.indexOf(':');
+  return colon > 0 ? idempotencyKey.slice(0, colon) : fallback;
 }

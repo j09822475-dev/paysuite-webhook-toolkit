@@ -38,8 +38,8 @@ export interface FastifyWebhookPluginOptions<P extends WebhookProvider> {
   readonly verifier: Verifier<P>;
   readonly handler: WebhookHandler<EventOf<P>, FastifyLikeRequest>;
   readonly onError?: (err: WebhookError) => Response;
-  /** HTTP status returned on success when the handler returns `void`. Default `204`. */
-  readonly successStatus?: number;
+  /** Override default success Response (when the handler returns `void`). Default 204 / empty body. */
+  readonly successResponse?: () => Response;
 }
 
 /**
@@ -63,7 +63,7 @@ export function fastifyWebhookPlugin<P extends WebhookProvider>(
   options: FastifyWebhookPluginOptions<P>,
 ): void {
   const onError = options.onError ?? defaultErrorResponse;
-  const successStatus = options.successStatus ?? 204;
+  const successResponse = options.successResponse ?? (() => new Response(null, { status: 204 }));
 
   fastify.addContentTypeParser(
     '*/*',
@@ -87,13 +87,11 @@ export function fastifyWebhookPlugin<P extends WebhookProvider>(
       onError,
     );
 
-    if (response) {
-      reply.code(response.status);
-      response.headers.forEach((value, key) => reply.header(key, value));
-      reply.send(await response.text());
-      return;
-    }
-    reply.code(successStatus).send();
+    const final = response ?? successResponse();
+    reply.code(final.status);
+    final.headers.forEach((value, key) => reply.header(key, value));
+    const text = await final.text();
+    reply.send(text.length > 0 ? text : undefined);
   });
 }
 

@@ -2,6 +2,20 @@ import { hex, utf8 } from '../core/encoding.js';
 import { normalizeEd25519PublicKey, verifyEd25519 } from '../core/crypto.js';
 import type { WebhookProvider } from '../core/types.js';
 
+// Cache the normalized 32-byte raw key per provided secret bytes so PEM /
+// hex / base64 inputs aren't re-decoded on every request. Combined with
+// `core/crypto.ts`'s `CryptoKey` cache (keyed on the same returned
+// Uint8Array), Ed25519 verification reduces to one `subtle.verify` call.
+const normalizedKeyCache = new WeakMap<Uint8Array, Uint8Array>();
+
+function getPublicKey(secret: Uint8Array): Uint8Array {
+  const cached = normalizedKeyCache.get(secret);
+  if (cached) return cached;
+  const normalized = normalizeEd25519PublicKey(secret);
+  normalizedKeyCache.set(secret, normalized);
+  return normalized;
+}
+
 /** Discord interaction payload — discriminated by `type` (numeric). */
 export type DiscordInteractionEvent = {
   readonly id?: string;
@@ -38,7 +52,7 @@ export const discord: WebhookProvider<DiscordInteractionEvent> = {
   },
 
   verify: async ({ signature, secret, rawBody, timestamp }) => {
-    const publicKey = normalizeEd25519PublicKey(secret);
+    const publicKey = getPublicKey(secret);
     const seconds = Math.floor((timestamp ?? 0) / 1000);
     const tsBytes = utf8.encode(String(seconds));
     const data = new Uint8Array(tsBytes.length + rawBody.length);
