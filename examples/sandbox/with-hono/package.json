@@ -1,0 +1,20 @@
+{
+  "name": "paysuite-webhook-toolkit-with-hono",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "tsx index.ts"
+  },
+  "dependencies": {
+    "@paysuite/webhook-toolkit": "^0.1.0",
+    "hono": "^4.4.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  },
+  "stackblitz": {
+    "startCommand": "npm start"
+  }
+}

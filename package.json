@@ -1,0 +1,239 @@
+{
+  "name": "@paysuite/webhook-toolkit",
+  "version": "0.1.0",
+  "description": "Universal, edge-first TypeScript toolkit for receiving, verifying, and routing webhooks from 20+ providers (Stripe, GitHub, Shopify, Clerk, Slack, Twilio, Svix/Standard Webhooks, ...). Zero runtime dependencies, tree-shakeable provider plugins, framework adapters for Express/Fastify/Hono/Elysia/Next.js, pluggable idempotency.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Mykhailo Kryvytskyi",
+  "homepage": "https://github.com/j09822475-dev/paysuite-webhook-toolkit",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/j09822475-dev/paysuite-webhook-toolkit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/j09822475-dev/paysuite-webhook-toolkit/issues"
+  },
+  "keywords": [
+    "webhook",
+    "webhooks",
+    "webhook-handler",
+    "webhook-verification",
+    "signature-verification",
+    "stripe-webhook",
+    "github-webhook",
+    "shopify-webhook",
+    "standard-webhooks",
+    "svix",
+    "hmac",
+    "ed25519",
+    "idempotency",
+    "edge-runtime",
+    "cloudflare-workers",
+    "vercel-edge",
+    "typescript",
+    "hono",
+    "elysia",
+    "nextjs",
+    "fastify",
+    "express",
+    "bun",
+    "deno"
+  ],
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "PLAN.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./errors": {
+      "types": "./dist/errors/index.d.ts",
+      "import": "./dist/errors/index.js"
+    },
+    "./router": {
+      "types": "./dist/router/index.d.ts",
+      "import": "./dist/router/index.js"
+    },
+    "./idempotency": {
+      "types": "./dist/idempotency/index.d.ts",
+      "import": "./dist/idempotency/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.js"
+    },
+    "./logger": {
+      "types": "./dist/logger/index.d.ts",
+      "import": "./dist/logger/index.js"
+    },
+    "./logger/pino": {
+      "types": "./dist/logger/pino.d.ts",
+      "import": "./dist/logger/pino.js"
+    },
+    "./retry": {
+      "types": "./dist/retry/index.d.ts",
+      "import": "./dist/retry/index.js"
+    },
+    "./providers": {
+      "types": "./dist/providers/index.d.ts",
+      "import": "./dist/providers/index.js"
+    },
+    "./providers/stripe": {
+      "types": "./dist/providers/stripe.d.ts",
+      "import": "./dist/providers/stripe.js"
+    },
+    "./providers/github": {
+      "types": "./dist/providers/github.d.ts",
+      "import": "./dist/providers/github.js"
+    },
+    "./providers/shopify": {
+      "types": "./dist/providers/shopify.d.ts",
+      "import": "./dist/providers/shopify.js"
+    },
+    "./providers/twilio": {
+      "types": "./dist/providers/twilio.d.ts",
+      "import": "./dist/providers/twilio.js"
+    },
+    "./providers/slack": {
+      "types": "./dist/providers/slack.d.ts",
+      "import": "./dist/providers/slack.js"
+    },
+    "./providers/clerk": {
+      "types": "./dist/providers/clerk.d.ts",
+      "import": "./dist/providers/clerk.js"
+    },
+    "./providers/sendgrid": {
+      "types": "./dist/providers/sendgrid.d.ts",
+      "import": "./dist/providers/sendgrid.js"
+    },
+    "./providers/resend": {
+      "types": "./dist/providers/resend.d.ts",
+      "import": "./dist/providers/resend.js"
+    },
+    "./providers/linear": {
+      "types": "./dist/providers/linear.d.ts",
+      "import": "./dist/providers/linear.js"
+    },
+    "./providers/vercel": {
+      "types": "./dist/providers/vercel.d.ts",
+      "import": "./dist/providers/vercel.js"
+    },
+    "./providers/discord": {
+      "types": "./dist/providers/discord.d.ts",
+      "import": "./dist/providers/discord.js"
+    },
+    "./providers/lemon-squeezy": {
+      "types": "./dist/providers/lemon-squeezy.d.ts",
+      "import": "./dist/providers/lemon-squeezy.js"
+    },
+    "./providers/paddle": {
+      "types": "./dist/providers/paddle.d.ts",
+      "import": "./dist/providers/paddle.js"
+    },
+    "./providers/square": {
+      "types": "./dist/providers/square.d.ts",
+      "import": "./dist/providers/square.js"
+    },
+    "./providers/mailgun": {
+      "types": "./dist/providers/mailgun.d.ts",
+      "import": "./dist/providers/mailgun.js"
+    },
+    "./providers/postmark": {
+      "types": "./dist/providers/postmark.d.ts",
+      "import": "./dist/providers/postmark.js"
+    },
+    "./providers/svix": {
+      "types": "./dist/providers/svix.d.ts",
+      "import": "./dist/providers/svix.js"
+    },
+    "./adapters/fetch": {
+      "types": "./dist/adapters/fetch.d.ts",
+      "import": "./dist/adapters/fetch.js"
+    },
+    "./adapters/express": {
+      "types": "./dist/adapters/express.d.ts",
+      "import": "./dist/adapters/express.js"
+    },
+    "./adapters/fastify": {
+      "types": "./dist/adapters/fastify.d.ts",
+      "import": "./dist/adapters/fastify.js"
+    },
+    "./adapters/hono": {
+      "types": "./dist/adapters/hono.d.ts",
+      "import": "./dist/adapters/hono.js"
+    },
+    "./adapters/elysia": {
+      "types": "./dist/adapters/elysia.d.ts",
+      "import": "./dist/adapters/elysia.js"
+    },
+    "./adapters/next-app": {
+      "types": "./dist/adapters/next-app.d.ts",
+      "import": "./dist/adapters/next-app.js"
+    },
+    "./adapters/next-pages": {
+      "types": "./dist/adapters/next-pages.d.ts",
+      "import": "./dist/adapters/next-pages.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "size": "size-limit",
+    "format": "prettier --write \"**/*.{ts,md,json}\"",
+    "prepublishOnly": "npm run lint && npm run typecheck && npm run test && npm run build"
+  },
+  "peerDependencies": {
+    "express": ">=4.18.0",
+    "fastify": ">=4.0.0",
+    "hono": ">=4.0.0",
+    "elysia": ">=1.0.0",
+    "next": ">=13.0.0"
+  },
+  "peerDependenciesMeta": {
+    "express": { "optional": true },
+    "fastify": { "optional": true },
+    "hono": { "optional": true },
+    "elysia": { "optional": true },
+    "next": { "optional": true }
+  },
+  "devDependencies": {
+    "@size-limit/preset-small-lib": "^11.1.0",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@vitest/coverage-v8": "^1.6.0",
+    "elysia": "^1.0.0",
+    "eslint": "^8.57.0",
+    "express": "^4.19.0",
+    "fastify": "^4.26.0",
+    "hono": "^4.4.0",
+    "next": "^14.2.0",
+    "prettier": "^3.2.0",
+    "size-limit": "^11.1.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  }
+}
